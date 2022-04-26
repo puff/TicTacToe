@@ -1,9 +1,8 @@
 ﻿using System.Net.Sockets;
-using TicTacToe.Shared;
 
-namespace TicTacToe.Server
+namespace TicTacToe.Shared
 {
-    internal class Player
+    public class Player
     {
         public Socket Client { get; private set; }
         public Symbol PlayerSymbol { get; private set; }
