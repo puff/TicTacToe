@@ -19,6 +19,7 @@ namespace TicTacToe.Server
             _players = new Player[2];
         }
 
+        #region Setup
         public bool TryBindSocket(string localIP, int port)
         {
             try
@@ -41,28 +42,66 @@ namespace TicTacToe.Server
                 Console.WriteLine("Server is not bound!");
                 return false;
             }
-            
-            try
+
+
+            while (_players[1] == null)
             {
-                Console.WriteLine("Attempting to listen for connections...");
-                _server.Listen(1);
+                try
+                {
+                    Console.WriteLine("Attempting to listen for connections...");
+                    _server.Listen(1);
 
-                var client = _server.Accept();
-                if (_players.FirstOrDefault() != null)
-                    _players[1] = new Player(client, Shared.Symbol.O);
-                else
-                    _players[0] = new Player(client, Shared.Symbol.X);
+                    var client = _server.Accept();
+                    var firstPlayer = true;
+                    if (_players.FirstOrDefault() != null)
+                    {
+                        firstPlayer = false;
+                        _players[1] = new Player(client, _players[0].PlayerSymbol == Shared.Symbol.X ? Shared.Symbol.O : Shared.Symbol.X);
+                    }
+                    else
+                        _players[0] = new Player(client, (Shared.Symbol)new Random().Next(1, 2));
 
-                Console.WriteLine($"Accepted connection from {client.LocalEndPoint}");
-                return true;
+                    Console.WriteLine($"Client #{(firstPlayer ? 1 : 2)} - {client.LocalEndPoint} connected. Symbol: {_players[firstPlayer ? 0 : 1].PlayerSymbol}");
+                    
+                    if (!firstPlayer)
+                        return true;
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine($"Failed to listen on server. Code {e.ErrorCode}");
+                    CloseConnection();
+                    return false;
+                }
             }
-            catch (SocketException e)
+
+            return false;
+        }
+        #endregion
+
+        #region Game Methods
+        public void NotifyPlayers(Shared.Message message, bool fromClient = false, Player? clientPlayer = null)
+        {
+            switch (message)
             {
-                Console.WriteLine($"Failed to listen on server. Code {e.ErrorCode}");
-                CloseConnection();
-                return false;
+                case Shared.Message.Start:
+                    foreach (var player in _players)
+                        // TODO: notify players to begin match
+                        break;
+                    break;
+                case Shared.Message.Move:
+
+                    break;
+                case Shared.Message.End:
+
+                    break;
+                case Shared.Message.Rematch:
+
+                    break;
             }
         }
+
+
+        #endregion
 
         public void CloseConnection()
         {

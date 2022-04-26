@@ -39,6 +39,7 @@ namespace TicTacToe.Server
                 Environment.Exit(-1);
             }
 
+            // Both clients have connected, start game loop now.
             while (true)
             {
 
