@@ -13,11 +13,13 @@ namespace TicTacToe.Server
     {
         private readonly Socket _server;
         private readonly Player[] _players;
+        private readonly Game _game;
 
-        public SocketHandler()
+        public SocketHandler(Game game)
         {
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _players = new Player[2];
+            _game = game;
         }
 
         #region Setup
@@ -84,18 +86,18 @@ namespace TicTacToe.Server
         {
             switch (message)
             {
-                case Shared.Message.Start:
+                case Message.Start:
                     foreach (var player in _players)
                         // TODO: notify players to begin match
                         break;
                     break;
-                case Shared.Message.Move:
+                case Message.Move:
+                    
+                    break;
+                case Message.End:
 
                     break;
-                case Shared.Message.End:
-
-                    break;
-                case Shared.Message.Rematch:
+                case Message.Rematch:
 
                     break;
             }

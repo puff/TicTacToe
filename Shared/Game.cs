@@ -17,7 +17,7 @@
             IsPlaying = true;
         }
 
-        private void PrintBoard()
+        public void PrintBoard()
         {
             var stringBoard = new string[9];
             for (int i = 0; i < stringBoard.Length; i++)
@@ -33,7 +33,7 @@
             Console.WriteLine("-+-+-");
         }
 
-        private bool CheckWinner(Symbol symbol)
+        public bool CheckWinner(Symbol symbol)
         {
             return (Board[0] == symbol && Board[1] == symbol && Board[2] == symbol) || // First row
                 (Board[3] == symbol && Board[4] == symbol && Board[5] == symbol) || // Second row
@@ -47,7 +47,7 @@
                 (Board[8] == symbol && Board[4] == symbol && Board[0] == symbol); // Diagonal2
         }
 
-        private bool CheckDraw()
+        public bool CheckDraw()
         {
             for (int i = 1; i < Board.Length; i++)
                 if (Board[i] == Symbol.Empty)

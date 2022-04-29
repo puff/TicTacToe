@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using TicTacToe.Shared;
 
 namespace TicTacToe.Server
 {
@@ -13,7 +14,8 @@ namespace TicTacToe.Server
         {
             Console.ResetColor();
 
-            var socketHandler = new SocketHandler();
+            var game = new Game();
+            var socketHandler = new SocketHandler(game);
             var localIP = GetLocalIP();
             if (!socketHandler.TryBindSocket(localIP, Port))
             {
@@ -40,14 +42,16 @@ namespace TicTacToe.Server
             }
 
             // Both clients have connected, start game loop now.
-            while (true)
+            while (game.IsPlaying)
             {
-
 
                 break;
             }
 
             Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Press enter to exit program...");
+
+            Console.ReadLine();
             Console.WriteLine("Exiting...");
             Console.ResetColor();
 
