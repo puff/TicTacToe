@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using TicTacToe.Shared;
 
@@ -41,11 +40,15 @@ namespace TicTacToe.Server
                 Environment.Exit(-1);
             }
 
-            // Both clients have connected, start game loop now.
+            // Both clients have connected, begin game
+            socketHandler.NotifyPlayers(Message.Start);
+
             while (game.IsPlaying)
             {
-
-                break;
+                game.PrintBoard();
+                socketHandler.HandleMessage(Message.Move, Symbol.X); // X always starts the game
+                game.PrintBoard();
+                socketHandler.HandleMessage(Message.Move, Symbol.O);
             }
 
             Console.ForegroundColor = ConsoleColor.Red;

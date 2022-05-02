@@ -4,17 +4,18 @@
     {
         private readonly Symbol[] Board;
         public bool IsPlaying { get; private set; }
-        public Symbol currentPlayingSymbol { get; private set; }
+        public Symbol PlayerSymbol { get; private set; }
 
         // TODO: Refactor this class to work with multiplayer sockets
 
-        public Game()
+        public Game(Symbol playerSymbol = Symbol.Empty)
         {
             Board = new Symbol[9];
             for (int i = 0; i < Board.Length; i++)
                 Board[i] = Symbol.Empty;
 
             IsPlaying = true;
+            PlayerSymbol = playerSymbol;
         }
 
         public void PrintBoard()
@@ -33,18 +34,29 @@
             Console.WriteLine("-+-+-");
         }
 
-        public bool CheckWinner(Symbol symbol)
+        public Symbol CheckWinner()
         {
-            return (Board[0] == symbol && Board[1] == symbol && Board[2] == symbol) || // First row
-                (Board[3] == symbol && Board[4] == symbol && Board[5] == symbol) || // Second row
-                (Board[6] == symbol && Board[7] == symbol && Board[8] == symbol) || // Third row
+            for (var i = 1; i < 3; i++)
+            {
+                var symbol = (Symbol)i;
+                if (
+                    (Board[0] == symbol && Board[1] == symbol && Board[2] == symbol) || // First row
+                    (Board[3] == symbol && Board[4] == symbol && Board[5] == symbol) || // Second row
+                    (Board[6] == symbol && Board[7] == symbol && Board[8] == symbol) || // Third row
 
-                (Board[6] == symbol && Board[3] == symbol && Board[0] == symbol) || // First column
-                (Board[7] == symbol && Board[4] == symbol && Board[1] == symbol) || // Second column
-                (Board[8] == symbol && Board[5] == symbol && Board[2] == symbol) || // Third column
+                    (Board[6] == symbol && Board[3] == symbol && Board[0] == symbol) || // First column
+                    (Board[7] == symbol && Board[4] == symbol && Board[1] == symbol) || // Second column
+                    (Board[8] == symbol && Board[5] == symbol && Board[2] == symbol) || // Third column
 
-                (Board[6] == symbol && Board[4] == symbol && Board[2] == symbol) || // Diagonal1
-                (Board[8] == symbol && Board[4] == symbol && Board[0] == symbol); // Diagonal2
+                    (Board[6] == symbol && Board[4] == symbol && Board[2] == symbol) || // Diagonal1
+                    (Board[8] == symbol && Board[4] == symbol && Board[0] == symbol) // Diagonal2
+                    )
+                {
+                    IsPlaying = false;
+                    return symbol;
+                }
+            }
+            return Symbol.Empty;
         }
 
         public bool CheckDraw()
@@ -55,6 +67,17 @@
             return true;
         }
 
+        public bool MakeMove(int move, Symbol symbol)
+        {
+            if (!(move >= 1 && move <= 9) || Board[move] != Symbol.Empty)
+                return false;
+
+            Board[move] = symbol;
+
+            return true;
+        }
+
+        // TODO: move this to client only class instead of shared library
         public void StartGame()
         {
             int move;
@@ -65,9 +88,9 @@
 
                 for (; ; )
                 {
-                    Console.WriteLine($"You are playing as {currentPlayingSymbol}.");
+                    Console.WriteLine($"You are playing as {PlayerSymbol}.");
                     Console.Write("Please insert a move (1-9): ");
-                    if (!int.TryParse(Console.ReadLine(), out move) || !(move >= 1 && move <= 9) || Board[move] != Symbol.Empty)
+                    if (!int.TryParse(Console.ReadLine(), out move) || !MakeMove(move, PlayerSymbol))
                     {
                         Console.WriteLine("Invalid move.");
                         Thread.Sleep(1200); // 1.2 seconds
@@ -77,33 +100,33 @@
                     break;
                 }
 
-                Board[move] = currentPlayingSymbol;
+                //Board[move] = currentPlayingSymbol;
 
-                if (CheckWinner(currentPlayingSymbol))
-                {
-                    Console.WriteLine("* * * * * * * * * *");
-                    Console.WriteLine($"'{currentPlayingSymbol}' wins!");
-                    Console.WriteLine("* * * * * * * * * *");
-                    Console.WriteLine("Final board:");
-                    PrintBoard();
-                    Console.WriteLine();
-                    IsPlaying = false;
-                    continue;
-                }
-                else if (CheckDraw())
-                {
-                    Console.WriteLine("* * * * * * * * * *");
-                    Console.WriteLine("It's a draw!");
-                    Console.WriteLine("* * * * * * * * * *");
-                    Console.WriteLine("Final board:");
-                    PrintBoard();
-                    Console.WriteLine();
-                    IsPlaying = false;
-                    continue;
-                }
+                //if (CheckWinner(currentPlayingSymbol))
+                //{
+                //    Console.WriteLine("* * * * * * * * * *");
+                //    Console.WriteLine($"'{currentPlayingSymbol}' wins!");
+                //    Console.WriteLine("* * * * * * * * * *");
+                //    Console.WriteLine("Final board:");
+                //    PrintBoard();
+                //    Console.WriteLine();
+                //    IsPlaying = false;
+                //    continue;
+                //}
+                //else if (CheckDraw())
+                //{
+                //    Console.WriteLine("* * * * * * * * * *");
+                //    Console.WriteLine("It's a draw!");
+                //    Console.WriteLine("* * * * * * * * * *");
+                //    Console.WriteLine("Final board:");
+                //    PrintBoard();
+                //    Console.WriteLine();
+                //    IsPlaying = false;
+                //    continue;
+                //}
 
                 //PrintBoard();
-                currentPlayingSymbol = currentPlayingSymbol == Symbol.X ? Symbol.O : Symbol.X; 
+                //currentPlayingSymbol = currentPlayingSymbol == Symbol.X ? Symbol.O : Symbol.X; 
             }
         }
     }

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using TicTacToe.Shared;
 
 namespace TicTacToe.Server
@@ -82,24 +77,103 @@ namespace TicTacToe.Server
         #endregion
 
         #region Game Methods
-        public void NotifyPlayers(Shared.Message message, bool fromClient = false, Player? clientPlayer = null)
+        public void HandleMessage(Message expectedMessage, Symbol expectedSymbol)
+        {
+            // TODO: add verification checks to be sure message came from correct client (ip endpoint)
+
+            var buffer = new byte[8]; // Should never use more than 8 bytes
+            var size =_server.Receive(buffer);
+            var message = (Message)buffer[0];
+            if (message != expectedMessage)
+            {
+                Console.WriteLine("message != expectedMessage");
+                // TODO: error handling stuff
+                return;
+            }
+
+            var symbol = (Symbol)buffer[1];
+            if (symbol != expectedSymbol)
+            {
+                Console.WriteLine("symbol != expectedSymbol");
+                // TODO: error handling stuff
+                return;
+            }
+
+            // TODO: rematch stuff
+            switch (message)
+            {
+                case Message.Move:
+                    var move = buffer[2]; 
+                    if (!_game.MakeMove(move, symbol))
+                    {
+                        Console.WriteLine("Invalid move from " + symbol.ToString());
+                        // TODO: error handling stuff
+                    }
+
+                    var winner = _game.CheckWinner();
+                    if (winner != Symbol.Empty)
+                    {
+                        // Notify other player to update their board and end the game
+                        NotifyPlayers(Message.End, null, new byte[3] 
+                        {
+                            move,
+                            0, // not a draw
+                            (byte)winner
+                        });
+                    }
+                    else if (_game.CheckDraw())
+                    {
+                        // Notify other player to update their board and end the game with a draw
+                        NotifyPlayers(Message.End, null, new byte[2]
+                        {
+                            move,
+                            1 // draw
+                        });
+                    }
+                    else
+                    {
+                        // Notify other player to update their board and send a move back to server
+                        NotifyPlayers(Message.Move, _players.Where(_player => _player.PlayerSymbol != symbol).FirstOrDefault(), new byte[1] { move });
+                    }
+
+                    
+                    break;
+            }
+        }
+
+        public void NotifyPlayers(Message message, Player? toPlayer = null, byte[] messageBuffer = null)
         {
             switch (message)
             {
                 case Message.Start:
                     foreach (var player in _players)
-                        // TODO: notify players to begin match
-                        break;
+                        player.Client.Send(new byte[2]
+                        {
+                            (byte)Message.Start,
+                            (byte)player.PlayerSymbol
+                        });
                     break;
                 case Message.Move:
-                    
+                    toPlayer?.Client.Send(new byte[3]
+                    {
+                        (byte)Message.Move,
+                        (byte)(toPlayer.PlayerSymbol == Symbol.X ? Symbol.O : Symbol.X),
+                        messageBuffer[0],
+                    });
                     break;
                 case Message.End:
-
+                    foreach (var player in _players)
+                        player.Client.Send(new byte[4]
+                        {
+                            (byte)Message.End,
+                            messageBuffer[0], // move
+                            messageBuffer[1], // draw
+                            messageBuffer[2] // winner (if it's not a draw)
+                        });
                     break;
-                case Message.Rematch:
+                //case Message.Rematch:
 
-                    break;
+                //    break;
             }
         }
 
