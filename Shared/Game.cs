@@ -36,6 +36,7 @@
 
         public Symbol CheckWinner()
         {
+            // Exclude 0 so it doesn't use Symbol.Empty
             for (var i = 1; i < 3; i++)
             {
                 var symbol = (Symbol)i;
